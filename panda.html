@@ -338,7 +338,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const redirectUri = params.get('redirect_uri');
-
+	alert("bingo");
     let siteKey = 'default';
 
     if (redirectUri) {
