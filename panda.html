@@ -332,49 +332,37 @@
   </div>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f93a968eaf3b3a","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.4.0-1-g37f21b1","token":"75e4b97016bd46dea61523b3689587db"}' crossorigin="anonymous"></script>
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const redirectUri = params.get('redirect_uri');
-	alert("bingo");
-    let siteKey = 'default';
+  window.onload = function () {
+  alert("window loaded");
 
-    if (redirectUri) {
-      try {
-        const parsedUrl = new URL(redirectUri);
-        const domain = parsedUrl.hostname;
+  const params = new URLSearchParams(window.location.search);
+  const redirectUri = params.get('redirect_uri');
+  console.log("redirect_uri:", redirectUri);
 
-        if (domain.includes('localhost') && parsedUrl.port === '6060') {
-          siteKey = 'site-a';
-		  console.log("site-a");
-        } else if (domain.includes('localhost') && parsedUrl.port === '8080') {
-          siteKey = 'site-b';
-		  console.log("site-b");
-        }
-      } catch (e) {
-        console.error('Invalid redirect_uri:', redirectUri);
+  let siteKey = 'default';
+
+  if (redirectUri) {
+    try {
+      const parsedUrl = new URL(redirectUri);
+      const domain = parsedUrl.hostname;
+      const port = parsedUrl.port;
+
+      if (domain.includes('localhost') && port === '6060') {
+        siteKey = 'site-a';
+        console.log("Matched site-a");
+      } else if (domain.includes('localhost') && port === '8080') {
+        siteKey = 'site-b';
+        console.log("Matched site-b");
       }
+    } catch (e) {
+      console.error('Invalid redirect_uri:', redirectUri, e);
     }
+  }
 
-    // Show correct login and apply branding
-    if (siteKey === 'site-a') {
-      document.body.style.background = '#336699';
-      document.getElementById('panda-login').style.display = 'block';
-      document.querySelector('#panda-login h1').innerText = 'Welcome to Site A!';
-    } else if (siteKey === 'site-b') {
-      document.body.style.background = '#993333';
-      document.getElementById('fox-login').style.display = 'block';
-      document.querySelector('#fox-login h1').innerText = 'Welcome to Site B!';
-    } else {
-      // Default to panda if no match
-      document.getElementById('panda-login').style.display = 'block';
-      document.querySelector('#panda-login h1').innerText = 'Welcome!';
-    }
-  });
+  document.getElementById('panda-login').style.display = siteKey === 'site-b' ? 'none' : 'block';
+  document.getElementById('fox-login').style.display = siteKey === 'site-b' ? 'block' : 'none';
+};
+
 </script>
 </body>
-
-
-
-
-
 </html>
