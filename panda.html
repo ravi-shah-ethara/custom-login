@@ -355,16 +355,6 @@
         console.error('Invalid redirect_uri:', redirectUri, e);
       }
     }
-
-    const panda = document.getElementById('panda-login');
-   
-
-    if (panda) {
-      panda.style.display = siteKey === 'site-b' ? 'none' : 'block';
-      fox.style.display = siteKey === 'site-b' ? 'block' : 'none';
-    } else {
-      console.warn('Login containers not found in DOM');
-    }
   });
 </script>
 </body>
