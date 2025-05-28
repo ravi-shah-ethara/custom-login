@@ -353,6 +353,9 @@
         } else if (domain.includes('localhost') && port === '8080') {
           siteKey = 'site-b';
           console.log("Matched site-b");
+        } else if (domain === 'a6dc-103-77-1-218.ngrok-free.app') {
+          siteKey = 'site-b';
+          console.log("Matched site-b");
         }
       } catch (e) {
         console.error('Invalid redirect_uri:', redirectUri, e);
