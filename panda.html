@@ -1,54 +1,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Custom Login</title>
-  <style>
-    #panda-login, #fox-login {
-      display: none;
-    }
-  </style>
-  <script defer>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Add debug marker
-      document.body.insertAdjacentHTML("beforeend", "<div style='color: green;'>JS loaded ✅</div>");
-
-      const params = new URLSearchParams(window.location.search);
-      const redirectUri = params.get('redirect_uri');
-
-      const panda = document.getElementById('panda-login');
-      const fox = document.getElementById('fox-login');
-
-      if (redirectUri) {
-        try {
-          const parsedUrl = new URL(redirectUri);
-          const domain = parsedUrl.hostname;
-          const port = parsedUrl.port;
-
-          // Matching rules
-          if (domain.includes('localhost') && port === '6060') {
-            panda.style.display = 'block';
-            fox.style.display = 'none';
-            document.body.insertAdjacentHTML("beforeend", "<div>Matched: site-a</div>");
-          } else if (domain.includes('localhost') && port === '8080') {
-            panda.style.display = 'none';
-            fox.style.display = 'block';
-            document.body.insertAdjacentHTML("beforeend", "<div>Matched: site-b</div>");
-          } else if (domain === 'a6dc-103-77-1-218.ngrok-free.app') {
-            panda.style.display = 'block';
-            fox.style.display = 'none';
-            document.body.insertAdjacentHTML("beforeend", "<div>Matched: site-c</div>");
-          } else {
-            // Fallback
-            panda.style.display = 'block';
-            fox.style.display = 'none';
-            document.body.insertAdjacentHTML("beforeend", "<div>Matched: default</div>");
-          }
-        } catch (e) {
-          document.body.insertAdjacentHTML("beforeend", "<div style='color:red;'>Invalid redirect_uri</div>");
-        }
-      }
-    });
-  </script>
+  <title>Ethara One Pass</title>
 </head>
 <body>
 
@@ -84,14 +37,7 @@
     </div>
   </div>
 
-  <!-- Fox Login -->
-  <div id="fox-login">
-    <div class="form">
-      <h1 style="color: #FF9800; font-family: 'Dancing Script', cursive;">Fox Login</h1>
-      <div style="font-size: 80px; margin-top: 30px;">🦊</div>
-      <div id="api"></div>
-    </div>
-  </div>
+
 
   
 
