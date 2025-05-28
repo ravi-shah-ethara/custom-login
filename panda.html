@@ -324,7 +324,14 @@
     </div>
   </div>
 
-
+  <!-- Fox Login Layout -->
+  <div id="fox-login" style="display:none;">
+    <div class="form">
+      <h1 style="color: #FF9800; font-family: 'Dancing Script', cursive;">Fox Login</h1>
+      <div style="font-size: 80px; margin-top: 30px;">🦊</div>
+      <div id="api"></div>
+    </div>
+  </div>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f93a968eaf3b3a","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.4.0-1-g37f21b1","token":"75e4b97016bd46dea61523b3689587db"}' crossorigin="anonymous"></script>
 <script>
@@ -341,15 +348,18 @@
         const domain = parsedUrl.hostname;
         const port = parsedUrl.port;
      const panda = document.getElementById('panda-login');
+        const fox = document.getElementById('fox-login');
         if (domain.includes('localhost') && port === '6060') {
 
           console.log("Matched site-a");
         } else if (domain.includes('localhost') && port === '8080') {
-    
           console.log("Matched site-b");
+          panda.style.display = 'none';
+          fox.style.display = 'block';
         } else if (domain === 'a6dc-103-77-1-218.ngrok-free.app') {
+           fox.style.display = 'none';
            panda.style.display = 'block';
-          console.log("Matched site-b");
+          console.log("Matched site-c");
         }
       } catch (e) {
         console.error('Invalid redirect_uri:', redirectUri, e);
