@@ -327,7 +327,47 @@
 
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f93a968eaf3b3a","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.4.0-1-g37f21b1","token":"75e4b97016bd46dea61523b3689587db"}' crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+  alert("hello");
+    const params = new URLSearchParams(window.location.search);
+    const redirectUri = params.get('redirect_uri');
+    console.log("redirect_uri:", redirectUri);
 
+    let siteKey = 'default';
+
+    if (redirectUri) {
+      try {
+        const parsedUrl = new URL(redirectUri);
+        const domain = parsedUrl.hostname;
+        const port = parsedUrl.port;
+
+        if (domain.includes('localhost') && port === '6060') {
+          siteKey = 'site-a';
+          console.log("Matched site-a");
+        } else if (domain.includes('localhost') && port === '8080') {
+          siteKey = 'site-b';
+          console.log("Matched site-b");
+        } else if (domain === 'a6dc-103-77-1-218.ngrok-free.app') {
+          siteKey = 'site-b';
+          console.log("Matched site-b");
+        }
+      } catch (e) {
+        console.error('Invalid redirect_uri:', redirectUri, e);
+      }
+    }
+
+    const panda = document.getElementById('panda-login');
+    const fox = document.getElementById('fox-login');
+
+    if (panda && fox) {
+      panda.style.display = siteKey === 'site-b' ? 'none' : 'block';
+      fox.style.display = siteKey === 'site-b' ? 'block' : 'none';
+    } else {
+      console.warn('Login containers not found in DOM');
+    }
+  });
+</script>
 </body>
 
 
