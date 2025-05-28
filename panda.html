@@ -334,22 +334,21 @@
     const redirectUri = params.get('redirect_uri');
     console.log("redirect_uri:", redirectUri);
 
-    let siteKey = 'default';
 
     if (redirectUri) {
       try {
         const parsedUrl = new URL(redirectUri);
         const domain = parsedUrl.hostname;
         const port = parsedUrl.port;
-
+     const panda = document.getElementById('panda-login');
         if (domain.includes('localhost') && port === '6060') {
-          siteKey = 'site-a';
+
           console.log("Matched site-a");
         } else if (domain.includes('localhost') && port === '8080') {
-          siteKey = 'site-b';
+    
           console.log("Matched site-b");
         } else if (domain === 'a6dc-103-77-1-218.ngrok-free.app') {
-          siteKey = 'site-b';
+           panda.style.display = 'block';
           console.log("Matched site-b");
         }
       } catch (e) {
@@ -358,9 +357,9 @@
     }
 
     const panda = document.getElementById('panda-login');
-    const fox = document.getElementById('fox-login');
+   
 
-    if (panda && fox) {
+    if (panda) {
       panda.style.display = siteKey === 'site-b' ? 'none' : 'block';
       fox.style.display = siteKey === 'site-b' ? 'block' : 'none';
     } else {
