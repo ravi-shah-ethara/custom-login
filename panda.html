@@ -3,6 +3,11 @@
 
 
   <style>
+    /* Hide B2C's built-in forgot password link */
+a[id*="forgotPassword"], 
+a[href*="forgot"] {
+    display: none !important;
+}
     @import url(https://fonts.googleapis.com/css?family=Dancing+Script|Roboto);
 
     *,
@@ -326,28 +331,32 @@
 
 
 <script>
-// Simple forgot password override
 window.addEventListener('load', function() {
-    // Wait a bit for B2C elements to load
+    // Wait for B2C to load
     setTimeout(function() {
-        // Find forgot password link
-        const forgotLink = document.querySelector('a[id*="forgotPassword"]') || 
-                          document.querySelector('a[href*="forgot"]') ||
-                          document.getElementById('forgotPassword');
+        // Hide B2C's forgot password link
+        const forgotLinks = document.querySelectorAll('a[id*="forgotPassword"], a[href*="forgot"]');
+        forgotLinks.forEach(link => link.style.display = 'none');
         
-        if (forgotLink) {
-            // Replace the click behavior
-            forgotLink.onclick = function(e) {
+        // Create your own forgot password link
+        const loginForm = document.querySelector('form') || document.querySelector('.password-reset-container') || document.body;
+        
+        if (loginForm && !document.getElementById('customForgotPassword')) {
+            const customForgotLink = document.createElement('a');
+            customForgotLink.id = 'customForgotPassword';
+            customForgotLink.href = '#';
+            customForgotLink.textContent = 'Forgot your password?';
+            customForgotLink.style.cssText = 'display: block; margin-top: 10px; color: #0078d4; text-decoration: none;';
+            
+            customForgotLink.onclick = function(e) {
                 e.preventDefault();
                 
-                // Get current URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
                 const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
                 const state = urlParams.get('state') || '';
                 const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                 
-                // Redirect to password reset policy
                 const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
                     `p=B2C_1A_PasswordReset&` +
                     `client_id=${encodeURIComponent(clientId)}&` +
@@ -360,11 +369,14 @@ window.addEventListener('load', function() {
                 window.location.href = resetUrl;
                 return false;
             };
+            
+            // Add the custom link to the form
+            loginForm.appendChild(customForgotLink);
         }
-    }, 2000); // Wait 2 seconds for B2C to fully load
+    }, 2000);
 });
 
-// Handle password reset success redirect
+// Handle password reset success redirect (same as before)
 if (document.body && document.body.textContent && 
     document.body.textContent.includes('password has been successfully reset')) {
     
