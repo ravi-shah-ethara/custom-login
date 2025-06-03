@@ -443,10 +443,9 @@ if (!window.customPasswordResetHandled) {
             }, 10000);
         }
         
-        // Handle password reset success page - Updated to work with the actual HTML structure
+        // Handle password reset success page - Visual debugging instead of console
         else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset') || 
                  window.location.href.includes('/SelfAsserted/confirmed')) {
-            console.log('On password reset success page:', window.location.href);
             
             setTimeout(function() {
                 // Check for the specific success message in the displayMessage input field
@@ -456,69 +455,105 @@ if (!window.customPasswordResetHandled) {
                                      displayMessageInput.value.includes('password has been successfully reset'));
                 
                 if (isSuccessPage) {
-                    console.log('Password reset success confirmed - adding redirect functionality');
-                    console.log('Success message:', displayMessageInput ? displayMessageInput.value : 'Not found');
-                    
                     // Get URL parameters from the current page
                     const urlParams = new URLSearchParams(window.location.search);
                     const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
                     const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
                     const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                     
-                    console.log('Current URL params:', {
-                        clientId: clientId,
-                        redirectUri: redirectUri,
-                        scope: scope
-                    });
+                    // Create debug info element to show what's happening
+                    const debugDiv = document.createElement('div');
+                    debugDiv.id = 'debugInfo';
+                    debugDiv.style.cssText = 'background: #ffffcc; border: 2px solid #ff6600; padding: 10px; margin: 10px; font-size: 12px; font-family: monospace;';
+                    debugDiv.innerHTML = 'Password reset success detected. Adding button...';
                     
-                    // Find the buttons div to add our button
-                    const buttonsDiv = document.querySelector('.buttons') || 
-                                     document.querySelector('#attributeVerification') ||
-                                     document.querySelector('#api') ||
-                                     document.body;
+                    // Find container for the button
+                    const buttonsDiv = document.querySelector('.buttons');
+                    const attributeForm = document.getElementById('attributeVerification');
+                    const apiDiv = document.getElementById('api');
+                    const container = buttonsDiv || attributeForm || apiDiv || document.body;
                     
-                    // Add continue button if not already exists
-                    if (!document.getElementById('continueToLoginButton')) {
-                        const continueButton = document.createElement('button');
-                        continueButton.id = 'continueToLoginButton';
-                        continueButton.textContent = 'Continue to Login';
-                        continueButton.type = 'button';
-                        continueButton.className = 'btn';
-                        continueButton.style.cssText = 'margin: 20px auto; padding: 12px 24px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 250px; font-size: 16px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
-                        
-                        continueButton.onclick = function() {
-                            console.log('Continue button clicked - redirecting to login');
-                            
-                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                                `p=b2c_1a_signup_signin&` +
-                                `client_id=${encodeURIComponent(clientId)}&` +
-                                `response_type=code&` +
-                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                                `scope=${encodeURIComponent(scope)}&` +
-                                `ui_locales=en-US`;
-                            
-                            console.log('Redirecting to login URL:', loginUrl);
-                            window.location.href = loginUrl;
-                        };
-                        
-                        buttonsDiv.appendChild(continueButton);
-                        console.log('Continue to Login button added to buttons div');
+                    // Update debug info
+                    debugDiv.innerHTML += '<br>Container found: ' + (container.tagName || 'UNKNOWN') + 
+                                         (container.className ? '.' + container.className : '') + 
+                                         (container.id ? '#' + container.id : '');
+                    
+                    // Add debug div first
+                    container.appendChild(debugDiv);
+                    
+                    // Check if button already exists and remove it
+                    const existingButton = document.getElementById('continueToLoginButton');
+                    if (existingButton) {
+                        existingButton.remove();
+                        debugDiv.innerHTML += '<br>Removed existing button';
                     }
                     
-                    // Also update the message to show countdown
+                    // Create the continue button
+                    const continueButton = document.createElement('button');
+                    continueButton.id = 'continueToLoginButton';
+                    continueButton.textContent = 'Continue to Login';
+                    continueButton.type = 'button';
+                    continueButton.style.cssText = 'margin: 20px auto; padding: 15px 30px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 300px; font-size: 18px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 9999; position: relative; font-weight: bold;';
+                    
+                    continueButton.onclick = function() {
+                        // Visual feedback when clicked
+                        continueButton.textContent = 'Redirecting...';
+                        continueButton.style.background = '#005a9f';
+                        
+                        const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                            `p=b2c_1a_signup_signin&` +
+                            `client_id=${encodeURIComponent(clientId)}&` +
+                            `response_type=code&` +
+                            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                            `scope=${encodeURIComponent(scope)}&` +
+                            `ui_locales=en-US`;
+                        
+                        setTimeout(function() {
+                            window.location.href = loginUrl;
+                        }, 500);
+                    };
+                    
+                    try {
+                        container.appendChild(continueButton);
+                        debugDiv.innerHTML += '<br>Button added successfully!';
+                        
+                        // Verify button was added
+                        const verifyButton = document.getElementById('continueToLoginButton');
+                        if (verifyButton) {
+                            debugDiv.innerHTML += '<br>Button verification: SUCCESS';
+                        } else {
+                            debugDiv.innerHTML += '<br>Button verification: FAILED';
+                        }
+                        
+                    } catch (error) {
+                        debugDiv.innerHTML += '<br>Error adding button: ' + error.message;
+                        
+                        // Try fallback to body
+                        try {
+                            document.body.appendChild(continueButton);
+                            debugDiv.innerHTML += '<br>Fallback to body: SUCCESS';
+                        } catch (fallbackError) {
+                            debugDiv.innerHTML += '<br>Fallback failed: ' + fallbackError.message;
+                        }
+                    }
+                    
+                    // Add automatic redirect with visual countdown
                     if (displayMessageInput && !window.autoRedirectScheduled) {
                         window.autoRedirectScheduled = true;
                         
-                        let countdown = 5;
-                        console.log('Starting 5-second countdown...');
+                        let countdown = 15; // Extended to 15 seconds for testing
                         
                         const countdownInterval = setInterval(function() {
-                            displayMessageInput.value = `Your password has been successfully reset. Redirecting to login page in ${countdown} seconds...`;
+                            displayMessageInput.value = `Password reset successful! Auto-redirecting in ${countdown}s (or click Continue to Login)`;
+                            
+                            // Update debug div with countdown
+                            debugDiv.innerHTML = debugDiv.innerHTML.split('<br>Countdown:')[0] + '<br>Countdown: ' + countdown + ' seconds';
+                            
                             countdown--;
                             
                             if (countdown < 0) {
                                 clearInterval(countdownInterval);
-                                console.log('Auto-redirecting to login page...');
+                                debugDiv.innerHTML += '<br>Auto-redirecting now...';
                                 
                                 const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
                                     `p=b2c_1a_signup_signin&` +
@@ -532,11 +567,16 @@ if (!window.customPasswordResetHandled) {
                             }
                         }, 1000);
                     }
+                    
                 } else {
-                    console.log('Success page not detected, displayMessage content:', 
-                               displayMessageInput ? displayMessageInput.value : 'No displayMessage input found');
+                    // Show debug info even when not detected
+                    const debugDiv = document.createElement('div');
+                    debugDiv.style.cssText = 'background: #ffcccc; border: 2px solid #ff0000; padding: 10px; margin: 10px; font-size: 12px;';
+                    debugDiv.innerHTML = 'Success page NOT detected<br>URL: ' + window.location.href + 
+                                       '<br>DisplayMessage: ' + (displayMessageInput ? displayMessageInput.value : 'NOT FOUND');
+                    document.body.appendChild(debugDiv);
                 }
-            }, 1000);
+            }, 2000);
         }
     }
     
