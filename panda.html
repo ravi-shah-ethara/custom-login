@@ -336,8 +336,8 @@ if (!window.customPasswordResetHandled) {
     window.addEventListener('load', function() {
         setTimeout(function() {
             // Check if we're on the LOGIN page (signup_signin policy)
-            if (window.location.href.includes('B2C_1A_signup_signin') || 
-                window.location.href.includes('CombinedSigninAndSignup')) {
+            if (window.location.href.toLowerCase().includes('B2C_1A_signup_signin') || 
+                window.location.href.toLowerCase().includes('CombinedSigninAndSignup')) {
                 
                 console.log('On login page - setting up forgot password override');
                 
@@ -380,7 +380,7 @@ if (!window.customPasswordResetHandled) {
             }
             
             // Check if we're on the PASSWORD RESET SUCCESS page
-            else if (window.location.href.includes('B2C_1A_PasswordReset')) {
+            else if (window.location.href.toLowerCase().includes('B2C_1A_PasswordReset')) {
                 console.log('On password reset page');
                 
                 // Check if this is the success step (after password has been reset)
