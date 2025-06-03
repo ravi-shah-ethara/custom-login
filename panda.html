@@ -443,20 +443,21 @@ if (!window.customPasswordResetHandled) {
             }, 10000);
         }
         
-        // Handle password reset success page - Updated to catch the actual success URL
+        // Handle password reset success page - Updated to work with the actual HTML structure
         else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset') || 
                  window.location.href.includes('/SelfAsserted/confirmed')) {
             console.log('On password reset success page:', window.location.href);
             
             setTimeout(function() {
-                // Check for success message OR if we're on the confirmed page
+                // Check for the specific success message in the displayMessage input field
+                const displayMessageInput = document.getElementById('displayMessage');
                 const isSuccessPage = window.location.href.includes('/SelfAsserted/confirmed') ||
-                                    (document.body.textContent && 
-                                     (document.body.textContent.includes('password has been successfully reset') ||
-                                      document.body.textContent.includes('Redirecting to login page')));
+                                    (displayMessageInput && displayMessageInput.value && 
+                                     displayMessageInput.value.includes('password has been successfully reset'));
                 
                 if (isSuccessPage) {
                     console.log('Password reset success confirmed - adding redirect functionality');
+                    console.log('Success message:', displayMessageInput ? displayMessageInput.value : 'Not found');
                     
                     // Get URL parameters from the current page
                     const urlParams = new URLSearchParams(window.location.search);
@@ -470,11 +471,11 @@ if (!window.customPasswordResetHandled) {
                         scope: scope
                     });
                     
-                    // Find a place to add the continue button
-                    const form = document.querySelector('form') || 
-                                document.querySelector('#api') ||
-                                document.querySelector('.entry') ||
-                                document.body;
+                    // Find the buttons div to add our button
+                    const buttonsDiv = document.querySelector('.buttons') || 
+                                     document.querySelector('#attributeVerification') ||
+                                     document.querySelector('#api') ||
+                                     document.body;
                     
                     // Add continue button if not already exists
                     if (!document.getElementById('continueToLoginButton')) {
@@ -482,6 +483,7 @@ if (!window.customPasswordResetHandled) {
                         continueButton.id = 'continueToLoginButton';
                         continueButton.textContent = 'Continue to Login';
                         continueButton.type = 'button';
+                        continueButton.className = 'btn';
                         continueButton.style.cssText = 'margin: 20px auto; padding: 12px 24px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 250px; font-size: 16px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
                         
                         continueButton.onclick = function() {
@@ -499,30 +501,40 @@ if (!window.customPasswordResetHandled) {
                             window.location.href = loginUrl;
                         };
                         
-                        form.appendChild(continueButton);
-                        console.log('Continue to Login button added successfully');
+                        buttonsDiv.appendChild(continueButton);
+                        console.log('Continue to Login button added to buttons div');
                     }
                     
-                    // Also add automatic redirect after 5 seconds
-                    if (!window.autoRedirectScheduled) {
+                    // Also update the message to show countdown
+                    if (displayMessageInput && !window.autoRedirectScheduled) {
                         window.autoRedirectScheduled = true;
                         
-                        console.log('Scheduling automatic redirect in 5 seconds...');
+                        let countdown = 5;
+                        console.log('Starting 5-second countdown...');
                         
-                        setTimeout(function() {
-                            console.log('Auto-redirecting to login page...');
+                        const countdownInterval = setInterval(function() {
+                            displayMessageInput.value = `Your password has been successfully reset. Redirecting to login page in ${countdown} seconds...`;
+                            countdown--;
                             
-                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                                `p=b2c_1a_signup_signin&` +
-                                `client_id=${encodeURIComponent(clientId)}&` +
-                                `response_type=code&` +
-                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                                `scope=${encodeURIComponent(scope)}&` +
-                                `ui_locales=en-US`;
-                            
-                            window.location.href = loginUrl;
-                        }, 5000); // 5 second delay
+                            if (countdown < 0) {
+                                clearInterval(countdownInterval);
+                                console.log('Auto-redirecting to login page...');
+                                
+                                const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                                    `p=b2c_1a_signup_signin&` +
+                                    `client_id=${encodeURIComponent(clientId)}&` +
+                                    `response_type=code&` +
+                                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                                    `scope=${encodeURIComponent(scope)}&` +
+                                    `ui_locales=en-US`;
+                                
+                                window.location.href = loginUrl;
+                            }
+                        }, 1000);
                     }
+                } else {
+                    console.log('Success page not detected, displayMessage content:', 
+                               displayMessageInput ? displayMessageInput.value : 'No displayMessage input found');
                 }
             }, 1000);
         }
