@@ -323,314 +323,196 @@
   </div>
 
 <script>
+// Combined solution: Working forgot password override + improved success page
 if (!window.customPasswordResetHandled) {
     window.customPasswordResetHandled = true;
     
-    // Function to aggressively override the forgot password link
-    function overrideForgotPasswordLink() {
-        console.log('Looking for forgot password link...');
-        
-        const forgotLink = document.getElementById('forgotPassword');
-        
-        if (forgotLink) {
-            console.log('Found forgot password link with href:', forgotLink.href);
-            
-            // Store original text
-            const originalText = forgotLink.textContent;
-            
-            // Create a completely new element to replace the old one
-            const newLink = document.createElement('a');
-            newLink.id = 'forgotPassword';
-            newLink.textContent = originalText;
-            newLink.href = '#';
-            newLink.style.cssText = forgotLink.style.cssText || 'color: inherit; text-decoration: none;';
-            
-            // Add our custom click handler
-            newLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                
-                console.log('Custom forgot password handler executing...');
-                
-                // Get parameters from current page URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                const state = urlParams.get('state') || '';
-                const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                
-                // Build password reset URL
-                const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                    `p=B2C_1A_PasswordReset&` +
-                    `client_id=${encodeURIComponent(clientId)}&` +
-                    `response_type=code&` +
-                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                    `scope=${encodeURIComponent(scope)}&` +
-                    `state=${encodeURIComponent(state)}&` +
-                    `ui_locales=en-US`;
-                
-                console.log('Redirecting to custom password reset:', resetUrl);
-                
-                // Use setTimeout to ensure the redirect happens after this event is fully processed
-                setTimeout(function() {
-                    window.location.href = resetUrl;
-                }, 10);
-                
-                return false;
-            });
-            
-            // Replace the old link with our new one
-            forgotLink.parentNode.replaceChild(newLink, forgotLink);
-            
-            console.log('Successfully replaced forgot password link with custom handler');
-            return true;
-        } else {
-            console.log('Forgot password link not found yet');
-            return false;
-        }
-    }
-    
-    // Function to monitor for the API div and form creation
-    function monitorForApiContent() {
-        const apiDiv = document.getElementById('api');
-        
-        if (apiDiv && apiDiv.innerHTML.trim() !== '') {
-            console.log('API content loaded, looking for forgot password link');
-            
-            // Try to override the link
-            if (overrideForgotPasswordLink()) {
-                return; // Success, stop monitoring
-            }
-        }
-        
-        // Keep trying if not found
-        setTimeout(monitorForApiContent, 200);
-    }
-    
-    // Start monitoring for API content
-    function startMonitoring() {
-        console.log('Starting to monitor for login form...');
-        
+    // Function to handle forgot password override (since this was working)
+    function setupForgotPasswordOverride() {
         if (window.location.href.toLowerCase().includes('b2c_1a_signup_signin') || 
             window.location.href.toLowerCase().includes('combinedsigninandsignup')) {
             
-            console.log('On login page - monitoring for forgot password link');
-            monitorForApiContent();
+            // Look for the forgot password link
+            const forgotLink = document.getElementById('forgotPassword');
             
-            // Also try with observer for dynamic content
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList') {
-                        const forgotLink = document.getElementById('forgotPassword');
-                        if (forgotLink && forgotLink.href && forgotLink.href.includes('forgotPassword')) {
-                            console.log('Detected forgot password link via observer');
-                            overrideForgotPasswordLink();
-                            observer.disconnect(); // Stop observing once we've handled it
-                        }
-                    }
-                });
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-            
-            // Stop observing after 10 seconds to prevent memory leaks
-            setTimeout(function() {
-                observer.disconnect();
-            }, 10000);
-        }
-        
-        // Handle password reset success page - Wait for specific B2C content to load
-        else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset') || 
-                 window.location.href.includes('/SelfAsserted/confirmed')) {
-            
-            // Function to check if the success page content is loaded
-            function checkForSuccessContent() {
-                const displayMessageInput = document.getElementById('displayMessage');
-                const attributeForm = document.getElementById('attributeVerification');
-                const buttonsDiv = document.querySelector('.buttons');
+            if (forgotLink) {
+                // Create a completely new element to replace the old one (this was working)
+                const newLink = document.createElement('a');
+                newLink.id = 'forgotPassword';
+                newLink.textContent = forgotLink.textContent;
+                newLink.href = '#';
+                newLink.style.cssText = forgotLink.style.cssText || 'color: inherit; text-decoration: none;';
                 
-                // Check if all required elements exist and have the right content
-                if (displayMessageInput && 
-                    attributeForm && 
-                    buttonsDiv &&
-                    displayMessageInput.value && 
-                    displayMessageInput.value.includes('password has been successfully reset')) {
+                // Add our custom click handler
+                newLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
                     
-                    // Content is loaded, proceed with button creation
-                    createSuccessPageContent(displayMessageInput, buttonsDiv);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-            
-            function createSuccessPageContent(displayMessageInput, buttonsDiv) {
-                // Create visual debug info
-                const debugDiv = document.createElement('div');
-                debugDiv.id = 'debugInfo';
-                debugDiv.style.cssText = 'background: #e8f5e8; border: 2px solid #4caf50; padding: 15px; margin: 10px 0; font-size: 14px; border-radius: 5px;';
-                debugDiv.innerHTML = '✓ Password reset success detected<br>✓ Required elements found<br>✓ Creating continue button...';
-                
-                // Add debug info to the buttons div
-                buttonsDiv.appendChild(debugDiv);
-                
-                // Get URL parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                
-                // Remove any existing button
-                const existingButton = document.getElementById('continueToLoginButton');
-                if (existingButton) {
-                    existingButton.remove();
-                }
-                
-                // Create the continue button
-                const continueButton = document.createElement('button');
-                continueButton.id = 'continueToLoginButton';
-                continueButton.textContent = 'Continue to Login';
-                continueButton.type = 'button';
-                continueButton.className = 'btn'; // Use B2C's button class
-                continueButton.style.cssText = `
-                    margin: 20px 0;
-                    padding: 15px 30px;
-                    background: #0078d4;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    display: block;
-                    width: 100%;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    transition: background 0.3s;
-                `;
-                
-                // Add hover effect
-                continueButton.onmouseover = function() {
-                    this.style.background = '#106ebe';
-                };
-                continueButton.onmouseout = function() {
-                    this.style.background = '#0078d4';
-                };
-                
-                continueButton.onclick = function() {
-                    // Visual feedback
-                    this.textContent = 'Redirecting to Login...';
-                    this.style.background = '#005a9f';
-                    this.disabled = true;
+                    // Get parameters from current page URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                    const state = urlParams.get('state') || '';
+                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                     
-                    const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                        `p=b2c_1a_signup_signin&` +
+                    // Build password reset URL
+                    const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                        `p=B2C_1A_PasswordReset&` +
                         `client_id=${encodeURIComponent(clientId)}&` +
                         `response_type=code&` +
                         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
                         `scope=${encodeURIComponent(scope)}&` +
+                        `state=${encodeURIComponent(state)}&` +
                         `ui_locales=en-US`;
                     
-                    // Small delay to show feedback
+                    // Small delay then redirect
                     setTimeout(function() {
-                        window.location.href = loginUrl;
-                    }, 800);
-                };
-                
-                // Add button to the buttons div
-                buttonsDiv.appendChild(continueButton);
-                
-                // Update debug info
-                debugDiv.innerHTML += '<br>✓ Button added to .buttons div<br>✓ Setting up auto-redirect...';
-                
-                // Verify button was added
-                const verifyButton = document.getElementById('continueToLoginButton');
-                if (verifyButton) {
-                    debugDiv.innerHTML += '<br>✓ Button verification: SUCCESS';
-                } else {
-                    debugDiv.innerHTML += '<br>✗ Button verification: FAILED';
-                }
-                
-                // Set up automatic redirect with countdown
-                if (!window.autoRedirectScheduled) {
-                    window.autoRedirectScheduled = true;
+                        window.location.href = resetUrl;
+                    }, 10);
                     
-                    let countdown = 12;
-                    
-                    const countdownInterval = setInterval(function() {
-                        displayMessageInput.value = `Password reset successful! Auto-redirect in ${countdown}s (or click Continue to Login below)`;
-                        
-                        // Update debug info with countdown
-                        const currentDebug = debugDiv.innerHTML.split('<br>⏱️')[0];
-                        debugDiv.innerHTML = currentDebug + `<br>⏱️ Auto-redirect in: ${countdown} seconds`;
-                        
-                        countdown--;
-                        
-                        if (countdown < 0) {
-                            clearInterval(countdownInterval);
-                            debugDiv.innerHTML += '<br>🚀 Redirecting now...';
-                            
-                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                                `p=b2c_1a_signup_signin&` +
-                                `client_id=${encodeURIComponent(clientId)}&` +
-                                `response_type=code&` +
-                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                                `scope=${encodeURIComponent(scope)}&` +
-                                `ui_locales=en-US`;
-                            
-                            window.location.href = loginUrl;
-                        }
-                    }, 1000);
-                }
+                    return false;
+                });
+                
+                // Replace the old link with our new one
+                forgotLink.parentNode.replaceChild(newLink, forgotLink);
+                return true;
             }
+        }
+        return false;
+    }
+    
+    // Function to handle password reset success page
+    function handlePasswordResetSuccess() {
+        if (window.location.href.includes('/SelfAsserted/confirmed') ||
+            window.location.href.toLowerCase().includes('b2c_1a_passwordreset')) {
             
-            // Start checking for content immediately and keep trying
-            let checkAttempts = 0;
-            const maxAttempts = 20; // Try for 20 seconds
-            
-            function startChecking() {
-                if (checkForSuccessContent()) {
-                    // Success! Content found and button created
-                    return;
-                }
+            setTimeout(function() {
+                const displayMessageInput = document.getElementById('displayMessage');
+                const buttonsDiv = document.querySelector('.buttons');
                 
-                checkAttempts++;
-                if (checkAttempts < maxAttempts) {
-                    setTimeout(startChecking, 1000); // Check every second
-                } else {
-                    // Show failure message
-                    const failDiv = document.createElement('div');
-                    failDiv.style.cssText = 'background: #ffe6e6; border: 2px solid #ff4444; padding: 15px; margin: 10px; border-radius: 5px;';
-                    failDiv.innerHTML = `
-                        ⚠️ Could not detect success page content<br>
-                        URL: ${window.location.href}<br>
-                        Attempts: ${checkAttempts}<br>
-                        DisplayMessage exists: ${!!document.getElementById('displayMessage')}<br>
-                        Form exists: ${!!document.getElementById('attributeVerification')}<br>
-                        Buttons div exists: ${!!document.querySelector('.buttons')}
+                // Check if this is the success page
+                if (displayMessageInput && 
+                    displayMessageInput.value && 
+                    displayMessageInput.value.includes('password has been successfully reset') &&
+                    buttonsDiv) {
+                    
+                    // Remove any existing button
+                    const existingButton = document.getElementById('continueToLoginButton');
+                    if (existingButton) {
+                        existingButton.remove();
+                    }
+                    
+                    // Create the continue button
+                    const continueButton = document.createElement('button');
+                    continueButton.id = 'continueToLoginButton';
+                    continueButton.textContent = 'Continue to Sign In';
+                    continueButton.type = 'button';
+                    
+                    // Style to be prominent and visible
+                    continueButton.style.cssText = `
+                        width: 100%;
+                        margin: 15px 0;
+                        padding: 15px;
+                        background: #0078d4;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                        font-size: 16px;
+                        font-weight: bold;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        transition: background 0.3s;
                     `;
-                    document.body.appendChild(failDiv);
+                    
+                    // Add hover effect
+                    continueButton.onmouseover = function() {
+                        this.style.background = '#106ebe';
+                    };
+                    continueButton.onmouseout = function() {
+                        this.style.background = '#0078d4';
+                    };
+                    
+                    continueButton.onclick = function() {
+                        // Visual feedback
+                        this.textContent = 'Redirecting to Sign In...';
+                        this.style.background = '#005a9f';
+                        this.disabled = true;
+                        
+                        // Get current page parameters
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                        const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                        const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                        
+                        // Build login URL
+                        const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                            `p=b2c_1a_signup_signin&` +
+                            `client_id=${encodeURIComponent(clientId)}&` +
+                            `response_type=code&` +
+                            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                            `scope=${encodeURIComponent(scope)}&` +
+                            `ui_locales=en-US`;
+                        
+                        // Small delay for visual feedback
+                        setTimeout(function() {
+                            window.location.href = loginUrl;
+                        }, 800);
+                    };
+                    
+                    // Add button to the buttons container
+                    buttonsDiv.appendChild(continueButton);
+                    
+                    // Update the message to be more helpful
+                    displayMessageInput.value = 'Your password has been reset successfully! Click the button below to sign in with your new password.';
+                    
+                    // Auto-redirect after 12 seconds if user doesn't click
+                    if (!window.autoRedirectScheduled) {
+                        window.autoRedirectScheduled = true;
+                        
+                        let countdown = 12;
+                        const countdownInterval = setInterval(function() {
+                            displayMessageInput.value = `Password reset successful! Auto-redirect in ${countdown}s (or click Continue to Sign In below)`;
+                            countdown--;
+                            
+                            if (countdown < 0) {
+                                clearInterval(countdownInterval);
+                                continueButton.click();
+                            }
+                        }, 1000);
+                    }
                 }
-            }
-            
-            // Start checking after a short delay
-            setTimeout(startChecking, 500);
+            }, 1500);
         }
     }
     
-    // Start monitoring when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startMonitoring);
-    } else {
-        startMonitoring();
+    // Monitor for login page content and setup forgot password override
+    function monitorForLoginContent() {
+        if (!setupForgotPasswordOverride()) {
+            // Keep trying if not found yet
+            setTimeout(monitorForLoginContent, 500);
+        }
     }
     
-    // Also start on window load as backup
+    // Start appropriate monitoring based on the page
+    function initializeHandlers() {
+        // Start monitoring for login content
+        setTimeout(monitorForLoginContent, 500);
+        
+        // Handle success page
+        handlePasswordResetSuccess();
+    }
+    
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeHandlers);
+    } else {
+        initializeHandlers();
+    }
+    
+    // Also try on window load
     window.addEventListener('load', function() {
-        setTimeout(startMonitoring, 100);
+        setTimeout(initializeHandlers, 100);
     });
 }
 </script>
