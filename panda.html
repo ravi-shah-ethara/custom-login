@@ -443,33 +443,74 @@ if (!window.customPasswordResetHandled) {
             }, 10000);
         }
         
-        // Handle password reset success page
-        else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset')) {
-            console.log('On password reset page');
+        // Handle password reset success page - Updated to catch the actual success URL
+        else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset') || 
+                 window.location.href.includes('/SelfAsserted/confirmed')) {
+            console.log('On password reset success page:', window.location.href);
             
             setTimeout(function() {
-                if (document.body.textContent && 
-                    (document.body.textContent.includes('password has been successfully reset') ||
-                     document.body.textContent.includes('Redirecting to login page'))) {
+                // Check for success message OR if we're on the confirmed page
+                const isSuccessPage = window.location.href.includes('/SelfAsserted/confirmed') ||
+                                    (document.body.textContent && 
+                                     (document.body.textContent.includes('password has been successfully reset') ||
+                                      document.body.textContent.includes('Redirecting to login page')));
+                
+                if (isSuccessPage) {
+                    console.log('Password reset success confirmed - adding redirect functionality');
                     
-                    console.log('Password reset success detected');
+                    // Get URL parameters from the current page
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                     
+                    console.log('Current URL params:', {
+                        clientId: clientId,
+                        redirectUri: redirectUri,
+                        scope: scope
+                    });
+                    
+                    // Find a place to add the continue button
                     const form = document.querySelector('form') || 
                                 document.querySelector('#api') ||
+                                document.querySelector('.entry') ||
                                 document.body;
                     
+                    // Add continue button if not already exists
                     if (!document.getElementById('continueToLoginButton')) {
                         const continueButton = document.createElement('button');
                         continueButton.id = 'continueToLoginButton';
                         continueButton.textContent = 'Continue to Login';
                         continueButton.type = 'button';
-                        continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 200px; font-size: 14px;';
+                        continueButton.style.cssText = 'margin: 20px auto; padding: 12px 24px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 250px; font-size: 16px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
                         
                         continueButton.onclick = function() {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                            const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                            const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                            console.log('Continue button clicked - redirecting to login');
+                            
+                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                                `p=b2c_1a_signup_signin&` +
+                                `client_id=${encodeURIComponent(clientId)}&` +
+                                `response_type=code&` +
+                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                                `scope=${encodeURIComponent(scope)}&` +
+                                `ui_locales=en-US`;
+                            
+                            console.log('Redirecting to login URL:', loginUrl);
+                            window.location.href = loginUrl;
+                        };
+                        
+                        form.appendChild(continueButton);
+                        console.log('Continue to Login button added successfully');
+                    }
+                    
+                    // Also add automatic redirect after 5 seconds
+                    if (!window.autoRedirectScheduled) {
+                        window.autoRedirectScheduled = true;
+                        
+                        console.log('Scheduling automatic redirect in 5 seconds...');
+                        
+                        setTimeout(function() {
+                            console.log('Auto-redirecting to login page...');
                             
                             const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
                                 `p=b2c_1a_signup_signin&` +
@@ -480,10 +521,7 @@ if (!window.customPasswordResetHandled) {
                                 `ui_locales=en-US`;
                             
                             window.location.href = loginUrl;
-                        };
-                        
-                        form.appendChild(continueButton);
-                        console.log('Continue button added');
+                        }, 5000); // 5 second delay
                     }
                 }
             }, 1000);
