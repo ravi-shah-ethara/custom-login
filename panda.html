@@ -326,37 +326,41 @@
 if (!window.customPasswordResetHandled) {
     window.customPasswordResetHandled = true;
     
-    // More aggressive approach - override as soon as possible
-    function overrideForgotPassword() {
+    // Function to aggressively override the forgot password link
+    function overrideForgotPasswordLink() {
         console.log('Looking for forgot password link...');
         
-        // Find the existing forgot password link on LOGIN page
-        const existingForgotLink = document.getElementById('forgotPassword');
+        const forgotLink = document.getElementById('forgotPassword');
         
-        if (existingForgotLink) {
-            console.log('Found forgot password link, applying aggressive override');
+        if (forgotLink) {
+            console.log('Found forgot password link with href:', forgotLink.href);
             
-            // Remove ALL existing event listeners by cloning the element
-            const newForgotLink = existingForgotLink.cloneNode(true);
-            existingForgotLink.parentNode.replaceChild(newForgotLink, existingForgotLink);
+            // Store original text
+            const originalText = forgotLink.textContent;
             
-            // Set href to prevent navigation
-            newForgotLink.href = 'javascript:void(0);';
+            // Create a completely new element to replace the old one
+            const newLink = document.createElement('a');
+            newLink.id = 'forgotPassword';
+            newLink.textContent = originalText;
+            newLink.href = '#';
+            newLink.style.cssText = forgotLink.style.cssText || 'color: inherit; text-decoration: none;';
             
-            // Add our custom click handler with capture=true to override B2C
-            newForgotLink.addEventListener('click', function(e) {
+            // Add our custom click handler
+            newLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 
-                console.log('Custom forgot password handler triggered');
+                console.log('Custom forgot password handler executing...');
                 
+                // Get parameters from current page URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
                 const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
                 const state = urlParams.get('state') || '';
                 const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                 
+                // Build password reset URL
                 const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
                     `p=B2C_1A_PasswordReset&` +
                     `client_id=${encodeURIComponent(clientId)}&` +
@@ -366,19 +370,20 @@ if (!window.customPasswordResetHandled) {
                     `state=${encodeURIComponent(state)}&` +
                     `ui_locales=en-US`;
                 
-                console.log('Redirecting to password reset policy:', resetUrl);
-                window.location.href = resetUrl;
+                console.log('Redirecting to custom password reset:', resetUrl);
+                
+                // Use setTimeout to ensure the redirect happens after this event is fully processed
+                setTimeout(function() {
+                    window.location.href = resetUrl;
+                }, 10);
+                
                 return false;
-            }, true); // Use capture=true to override B2C handlers
+            });
             
-            // Also set onclick property as backup
-            newForgotLink.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            };
+            // Replace the old link with our new one
+            forgotLink.parentNode.replaceChild(newLink, forgotLink);
             
-            console.log('Forgot password link override applied successfully');
+            console.log('Successfully replaced forgot password link with custom handler');
             return true;
         } else {
             console.log('Forgot password link not found yet');
@@ -386,78 +391,115 @@ if (!window.customPasswordResetHandled) {
         }
     }
     
-    // Try multiple times to catch the element
-    function tryOverride() {
+    // Function to monitor for the API div and form creation
+    function monitorForApiContent() {
+        const apiDiv = document.getElementById('api');
+        
+        if (apiDiv && apiDiv.innerHTML.trim() !== '') {
+            console.log('API content loaded, looking for forgot password link');
+            
+            // Try to override the link
+            if (overrideForgotPasswordLink()) {
+                return; // Success, stop monitoring
+            }
+        }
+        
+        // Keep trying if not found
+        setTimeout(monitorForApiContent, 200);
+    }
+    
+    // Start monitoring for API content
+    function startMonitoring() {
+        console.log('Starting to monitor for login form...');
+        
         if (window.location.href.toLowerCase().includes('b2c_1a_signup_signin') || 
             window.location.href.toLowerCase().includes('combinedsigninandsignup')) {
             
-            console.log('On login page - attempting forgot password override');
+            console.log('On login page - monitoring for forgot password link');
+            monitorForApiContent();
             
-            if (!overrideForgotPassword()) {
-                // Try again after a delay
-                setTimeout(tryOverride, 500);
-            }
+            // Also try with observer for dynamic content
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        const forgotLink = document.getElementById('forgotPassword');
+                        if (forgotLink && forgotLink.href && forgotLink.href.includes('forgotPassword')) {
+                            console.log('Detected forgot password link via observer');
+                            overrideForgotPasswordLink();
+                            observer.disconnect(); // Stop observing once we've handled it
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Stop observing after 10 seconds to prevent memory leaks
+            setTimeout(function() {
+                observer.disconnect();
+            }, 10000);
         }
         
         // Handle password reset success page
         else if (window.location.href.toLowerCase().includes('b2c_1a_passwordreset')) {
             console.log('On password reset page');
             
-            if (document.body.textContent && 
-                (document.body.textContent.includes('password has been successfully reset') ||
-                 document.body.textContent.includes('Redirecting to login page'))) {
-                
-                console.log('Password reset success detected, adding continue button');
-                
-                const form = document.querySelector('form') || 
-                            document.querySelector('.password-reset-container') || 
-                            document.querySelector('#api') ||
-                            document.body;
-                
-                if (!document.getElementById('continueToLoginButton')) {
-                    const continueButton = document.createElement('button');
-                    continueButton.id = 'continueToLoginButton';
-                    continueButton.textContent = 'Continue to Login';
-                    continueButton.type = 'button';
-                    continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 200px; font-size: 14px;';
+            setTimeout(function() {
+                if (document.body.textContent && 
+                    (document.body.textContent.includes('password has been successfully reset') ||
+                     document.body.textContent.includes('Redirecting to login page'))) {
                     
-                    continueButton.onclick = function() {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                        const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                        const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                        
-                        const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                            `p=b2c_1a_signup_signin&` +
-                            `client_id=${encodeURIComponent(clientId)}&` +
-                            `response_type=code&` +
-                            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                            `scope=${encodeURIComponent(scope)}&` +
-                            `ui_locales=en-US`;
-                        
-                        console.log('Redirecting to login page:', loginUrl);
-                        window.location.href = loginUrl;
-                    };
+                    console.log('Password reset success detected');
                     
-                    form.appendChild(continueButton);
-                    console.log('Continue to Login button added');
+                    const form = document.querySelector('form') || 
+                                document.querySelector('#api') ||
+                                document.body;
+                    
+                    if (!document.getElementById('continueToLoginButton')) {
+                        const continueButton = document.createElement('button');
+                        continueButton.id = 'continueToLoginButton';
+                        continueButton.textContent = 'Continue to Login';
+                        continueButton.type = 'button';
+                        continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 200px; font-size: 14px;';
+                        
+                        continueButton.onclick = function() {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                            const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                            const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                            
+                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                                `p=b2c_1a_signup_signin&` +
+                                `client_id=${encodeURIComponent(clientId)}&` +
+                                `response_type=code&` +
+                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                                `scope=${encodeURIComponent(scope)}&` +
+                                `ui_locales=en-US`;
+                            
+                            window.location.href = loginUrl;
+                        };
+                        
+                        form.appendChild(continueButton);
+                        console.log('Continue button added');
+                    }
                 }
-            }
+            }, 1000);
         }
     }
     
-    // Start trying immediately
+    // Start monitoring when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', tryOverride);
+        document.addEventListener('DOMContentLoaded', startMonitoring);
     } else {
-        tryOverride();
+        startMonitoring();
     }
     
-    // Also try on window load
+    // Also start on window load as backup
     window.addEventListener('load', function() {
-        setTimeout(tryOverride, 100);
-        setTimeout(tryOverride, 1000);
-        setTimeout(tryOverride, 2000);
+        setTimeout(startMonitoring, 100);
     });
 }
 </script>
