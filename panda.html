@@ -325,7 +325,77 @@
   </div>
 
 
+<script>
+        // Function to get current URL parameters
+        function getUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                client_id: urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73',
+                redirect_uri: urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect',
+                state: urlParams.get('state') || '',
+                nonce: urlParams.get('nonce') || '',
+                scope: urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73'
+            };
+        }
 
+        // Function to handle forgot password click
+        function handleForgotPassword() {
+            const params = getUrlParameters();
+            
+            const passwordResetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                `p=B2C_1A_PasswordReset&` +
+                `client_id=${encodeURIComponent(params.client_id)}&` +
+                `response_type=code&` +
+                `redirect_uri=${encodeURIComponent(params.redirect_uri)}&` +
+                `scope=${encodeURIComponent(params.scope)}&` +
+                `state=${encodeURIComponent(params.state)}&` +
+                `ui_locales=en-US`;
+            
+            window.location.href = passwordResetUrl;
+        }
+
+        // Main event listener - handles your custom elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const forgotPasswordLinks = document.querySelectorAll('a[href*="forgot"], button[id*="forgot"], .forgot-password, #forgotPassword');
+            
+            forgotPasswordLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleForgotPassword();
+                });
+            });
+
+            // Handle password reset success redirect
+            if (document.body.textContent.includes('password has been successfully reset')) {
+                setTimeout(function() {
+                    const params = getUrlParameters();
+                    const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                        `p=b2c_1a_signup_signin&` +
+                        `client_id=${encodeURIComponent(params.client_id)}&` +
+                        `response_type=code&` +
+                        `redirect_uri=${encodeURIComponent(params.redirect_uri)}&` +
+                        `scope=${encodeURIComponent(params.scope)}&` +
+                        `ui_locales=en-US`;
+                    
+                    window.location.href = loginUrl;
+                }, 3000);
+            }
+        });
+
+        // IMPORTANT: Also include this alternative approach
+        // This handles B2C's built-in forgot password elements that load after DOM
+        window.addEventListener('load', function() {
+            const b2cForgotLinks = document.querySelectorAll('a[id*="forgotPassword"], a[href*="forgotPassword"]');
+            
+            b2cForgotLinks.forEach(function(link) {
+                link.href = '#';
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleForgotPassword();
+                });
+            });
+        });
+    </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f93a968eaf3b3a","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.4.0-1-g37f21b1","token":"75e4b97016bd46dea61523b3689587db"}' crossorigin="anonymous"></script>
 </body>
 
