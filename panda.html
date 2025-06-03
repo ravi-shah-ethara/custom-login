@@ -331,71 +331,78 @@ a[href*="forgot"] {
 
 
 <script>
-window.addEventListener('load', function() {
-    // Wait for B2C to load
-    setTimeout(function() {
-        // Hide B2C's forgot password link
-        const forgotLinks = document.querySelectorAll('a[id*="forgotPassword"], a[href*="forgot"]');
-        forgotLinks.forEach(link => link.style.display = 'none');
-        
-        // Create your own forgot password link
-        const loginForm = document.querySelector('form') || document.querySelector('.password-reset-container') || document.body;
-        
-        if (loginForm && !document.getElementById('customForgotPassword')) {
-            const customForgotLink = document.createElement('a');
-            customForgotLink.id = 'customForgotPassword';
-            customForgotLink.href = '#';
-            customForgotLink.textContent = 'Forgot your password?';
-            customForgotLink.style.cssText = 'display: block; margin-top: 10px; color: #0078d4; text-decoration: none;';
-            
-            customForgotLink.onclick = function(e) {
-                e.preventDefault();
-                
-                const urlParams = new URLSearchParams(window.location.search);
-                const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                const state = urlParams.get('state') || '';
-                const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                
-                const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                    `p=B2C_1A_PasswordReset&` +
-                    `client_id=${encodeURIComponent(clientId)}&` +
-                    `response_type=code&` +
-                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                    `scope=${encodeURIComponent(scope)}&` +
-                    `state=${encodeURIComponent(state)}&` +
-                    `ui_locales=en-US`;
-                
-                window.location.href = resetUrl;
-                return false;
-            };
-            
-            // Add the custom link to the form
-            loginForm.appendChild(customForgotLink);
-        }
-    }, 2000);
-});
-
-// Handle password reset success redirect (same as before)
-if (document.body && document.body.textContent && 
-    document.body.textContent.includes('password has been successfully reset')) {
+// Only handle forgot password link creation - NO auto redirects
+if (!window.customPasswordResetHandled) {
+    window.customPasswordResetHandled = true;
     
-    setTimeout(function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-        const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-        const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-        
-        const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-            `p=b2c_1a_signup_signin&` +
-            `client_id=${encodeURIComponent(clientId)}&` +
-            `response_type=code&` +
-            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-            `scope=${encodeURIComponent(scope)}&` +
-            `ui_locales=en-US`;
-        
-        window.location.href = loginUrl;
-    }, 3000);
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            // Hide B2C's forgot password links
+            const forgotLinks = document.querySelectorAll('a[id*="forgotPassword"], a[href*="forgot"]');
+            forgotLinks.forEach(link => link.style.display = 'none');
+            
+            // Create custom forgot password link
+            if (!document.getElementById('customForgotPassword')) {
+                const loginForm = document.querySelector('form') || document.body;
+                
+                const customForgotLink = document.createElement('a');
+                customForgotLink.id = 'customForgotPassword';
+                customForgotLink.href = '#';
+                customForgotLink.textContent = 'Forgot your password?';
+                customForgotLink.style.cssText = 'display: block; margin-top: 10px; color: #0078d4; text-decoration: none;';
+                
+                customForgotLink.onclick = function(e) {
+                    e.preventDefault();
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                    const state = urlParams.get('state') || '';
+                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                    
+                    const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                        `p=B2C_1A_PasswordReset&` +
+                        `client_id=${encodeURIComponent(clientId)}&` +
+                        `response_type=code&` +
+                        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                        `scope=${encodeURIComponent(scope)}&` +
+                        `state=${encodeURIComponent(state)}&` +
+                        `ui_locales=en-US`;
+                    
+                    window.location.href = resetUrl;
+                    return false;
+                };
+                
+                loginForm.appendChild(customForgotLink);
+            }
+            
+            // For password reset success page - show manual "Continue to Login" button
+            if (document.body.textContent && document.body.textContent.includes('password has been successfully reset')) {
+                const continueButton = document.createElement('button');
+                continueButton.textContent = 'Continue to Login';
+                continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer;';
+                
+                continueButton.onclick = function() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                    
+                    const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                        `p=b2c_1a_signup_signin&` +
+                        `client_id=${encodeURIComponent(clientId)}&` +
+                        `response_type=code&` +
+                        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                        `scope=${encodeURIComponent(scope)}&` +
+                        `ui_locales=en-US`;
+                    
+                    window.location.href = loginUrl;
+                };
+                
+                document.body.appendChild(continueButton);
+            }
+        }, 2000);
+    });
 }
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f93a968eaf3b3a","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.4.0-1-g37f21b1","token":"75e4b97016bd46dea61523b3689587db"}' crossorigin="anonymous"></script>
