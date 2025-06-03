@@ -330,80 +330,111 @@ a[href*="forgot"] {
   </div>
 
 
+// SCRIPT FOR PASSWORD RESET FLOW - Not login flow
+
 <script>
-// Only handle forgot password link override - NO auto redirects
 if (!window.customPasswordResetHandled) {
     window.customPasswordResetHandled = true;
     
     window.addEventListener('load', function() {
         setTimeout(function() {
-            // Find the existing forgot password link
-            const existingForgotLink = document.getElementById('forgotPassword');
-            
-            if (existingForgotLink) {
-                // Replace the existing link's behavior
-                existingForgotLink.onclick = function(e) {
-                    e.preventDefault();
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                    const state = urlParams.get('state') || '';
-                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                    
-                    const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                        `p=B2C_1A_PasswordReset&` +
-                        `client_id=${encodeURIComponent(clientId)}&` +
-                        `response_type=code&` +
-                        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                        `scope=${encodeURIComponent(scope)}&` +
-                        `state=${encodeURIComponent(state)}&` +
-                        `ui_locales=en-US`;
-                    
-                    window.location.href = resetUrl;
-                    return false;
-                };
+            // Check if we're on the LOGIN page (signup_signin policy)
+            if (window.location.href.includes('B2C_1A_signup_signin') || 
+                window.location.href.includes('CombinedSigninAndSignup')) {
                 
-                // Also update the href to prevent default B2C behavior
-                existingForgotLink.href = '#';
+                console.log('On login page - setting up forgot password override');
                 
-                console.log('Forgot password link override applied successfully');
-            } else {
-                console.log('Forgot password link not found');
-            }
-            
-            // For password reset success page - show manual "Continue to Login" button
-            if (document.body.textContent && document.body.textContent.includes('password has been successfully reset')) {
-                // Find a good place to add the button
-                const form = document.getElementById('localAccountForm') || document.querySelector('form') || document.body;
+                // Find the existing forgot password link on LOGIN page
+                const existingForgotLink = document.getElementById('forgotPassword');
                 
-                // Only add if not already exists
-                if (!document.getElementById('continueToLoginButton')) {
-                    const continueButton = document.createElement('button');
-                    continueButton.id = 'continueToLoginButton';
-                    continueButton.textContent = 'Continue to Login';
-                    continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 100%;';
+                if (existingForgotLink) {
+                    console.log('Found forgot password link, overriding behavior');
                     
-                    continueButton.onclick = function() {
+                    // Replace the existing link's behavior
+                    existingForgotLink.onclick = function(e) {
+                        e.preventDefault();
+                        
                         const urlParams = new URLSearchParams(window.location.search);
                         const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
                         const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                        const state = urlParams.get('state') || '';
                         const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
                         
-                        const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                            `p=b2c_1a_signup_signin&` +
+                        const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                            `p=B2C_1A_PasswordReset&` +
                             `client_id=${encodeURIComponent(clientId)}&` +
                             `response_type=code&` +
                             `redirect_uri=${encodeURIComponent(redirectUri)}&` +
                             `scope=${encodeURIComponent(scope)}&` +
+                            `state=${encodeURIComponent(state)}&` +
                             `ui_locales=en-US`;
                         
-                        window.location.href = loginUrl;
+                        console.log('Redirecting to password reset policy:', resetUrl);
+                        window.location.href = resetUrl;
+                        return false;
                     };
                     
-                    form.appendChild(continueButton);
+                    // Also update the href to prevent default B2C behavior
+                    existingForgotLink.href = '#';
+                    console.log('Forgot password link override applied successfully');
+                } else {
+                    console.log('Forgot password link not found on login page');
                 }
             }
+            
+            // Check if we're on the PASSWORD RESET SUCCESS page
+            else if (window.location.href.includes('B2C_1A_PasswordReset')) {
+                console.log('On password reset page');
+                
+                // Check if this is the success step (after password has been reset)
+                if (document.body.textContent && 
+                    (document.body.textContent.includes('password has been successfully reset') ||
+                     document.body.textContent.includes('Redirecting to login page'))) {
+                    
+                    console.log('Password reset success detected, adding continue button');
+                    
+                    // Find a good place to add the button
+                    const form = document.querySelector('form') || 
+                                document.querySelector('.password-reset-container') || 
+                                document.querySelector('#api') ||
+                                document.body;
+                    
+                    // Only add if not already exists
+                    if (!document.getElementById('continueToLoginButton')) {
+                        const continueButton = document.createElement('button');
+                        continueButton.id = 'continueToLoginButton';
+                        continueButton.textContent = 'Continue to Login';
+                        continueButton.type = 'button'; // Prevent form submission
+                        continueButton.style.cssText = 'margin-top: 20px; padding: 10px 20px; background: #0078d4; color: white; border: none; cursor: pointer; display: block; width: 200px; font-size: 14px;';
+                        
+                        continueButton.onclick = function() {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                            const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                            const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                            
+                            const loginUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                                `p=b2c_1a_signup_signin&` +
+                                `client_id=${encodeURIComponent(clientId)}&` +
+                                `response_type=code&` +
+                                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                                `scope=${encodeURIComponent(scope)}&` +
+                                `ui_locales=en-US`;
+                            
+                            console.log('Redirecting to login page:', loginUrl);
+                            window.location.href = loginUrl;
+                        };
+                        
+                        form.appendChild(continueButton);
+                        console.log('Continue to Login button added');
+                    }
+                }
+            }
+            
+            else {
+                console.log('Not on login or password reset page, script will not run');
+            }
+            
         }, 2000);
     });
 }
