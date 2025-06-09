@@ -323,110 +323,59 @@
   </div>
 
 <script>
-  // Updated JavaScript for panda.html - Unified Policy Approach
-// This ensures both sign-in and password reset use the same policy
+// SIMPLEST APPROACH - Just update your panda.html JavaScript
+// This approach doesn't require any policy changes
+// It just makes the forgot password link use the same policy as sign-in
 
 (function() {
     'use strict';
     
-    console.log('🐼 Panda Login Handler - Unified Policy v1.0');
+    console.log('🐼 Simple Panda Login Handler');
     
-    // Function to setup forgot password override using the same policy
-    function setupForgotPasswordOverride() {
-        if (window.location.href.toLowerCase().includes('b2c_1a_signup_signin') || 
-            window.location.href.toLowerCase().includes('combinedsigninandsignup')) {
+    function setupSimpleForgotPassword() {
+        const forgotLink = document.getElementById('forgotPassword');
+        
+        if (forgotLink && !forgotLink.dataset.handled) {
+            console.log('Setting up simple forgot password redirect...');
+            forgotLink.dataset.handled = 'true';
             
-            const forgotLink = document.getElementById('forgotPassword');
+            // Override the forgot password link to stay in the same policy
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get current URL parameters
+                const currentUrl = new URL(window.location.href);
+                
+                // Change the policy parameter to use password reset policy
+                // but keep all other parameters the same
+                currentUrl.searchParams.set('p', 'B2C_1A_PasswordReset');
+                
+                // Redirect to password reset with same parameters
+                console.log('Redirecting to password reset:', currentUrl.toString());
+                window.location.href = currentUrl.toString();
+            });
             
-            if (forgotLink && !forgotLink.dataset.customized) {
-                console.log('🔗 Setting up unified forgot password override...');
-                forgotLink.dataset.customized = 'true';
-                
-                const newLink = document.createElement('a');
-                newLink.id = 'forgotPassword';
-                newLink.textContent = forgotLink.textContent;
-                newLink.href = '#';
-                newLink.style.cssText = forgotLink.style.cssText || 'color: inherit; text-decoration: none;';
-                
-                newLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    
-                    // Get ALL parameters from current page URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
-                    const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
-                    const responseType = urlParams.get('response_type') || 'code';
-                    const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
-                    const state = urlParams.get('state') || '';
-                    
-                    console.log('Password reset parameters:', {
-                        clientId,
-                        redirectUri, 
-                        responseType,
-                        scope,
-                        state
-                    });
-                    
-                    // CRITICAL: Use the SAME policy as sign-in (B2C_1A_signup_signin)
-                    // This prevents the token mismatch issue
-                    const resetUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
-                        `p=B2C_1A_signup_signin&` +  // Same policy as sign-in!
-                        `client_id=${encodeURIComponent(clientId)}&` +
-                        `response_type=${encodeURIComponent(responseType)}&` +
-                        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                        `scope=${encodeURIComponent(scope)}&` +
-                        `ui_locales=en-US` +
-                        `&prompt=login` + // Force re-authentication
-                        `&login_hint=password_reset` + // Hint for password reset flow
-                        (state ? `&state=${encodeURIComponent(state)}` : '');
-                    
-                    console.log('Redirecting to unified policy for password reset:', resetUrl);
-                    
-                    setTimeout(() => window.location.href = resetUrl, 10);
-                    return false;
-                });
-                
-                forgotLink.parentNode.replaceChild(newLink, forgotLink);
-                console.log('✅ Unified forgot password override setup complete');
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // Monitor for login page content and setup forgot password override
-    function monitorForLoginContent() {
-        if (!setupForgotPasswordOverride()) {
-            // Keep trying if not found yet
-            setTimeout(monitorForLoginContent, 500);
+            console.log('✅ Simple forgot password setup complete');
         }
     }
     
-    // Initialize when page loads
+    // Try to setup the forgot password link
     function initialize() {
-        console.log('🚀 Initializing unified panda handler...');
+        setupSimpleForgotPassword();
         
-        // Start monitoring for login content
-        setTimeout(monitorForLoginContent, 500);
-        
-        console.log('✅ Unified panda handler initialized');
+        // Try again in case the link loads later
+        setTimeout(setupSimpleForgotPassword, 1000);
+        setTimeout(setupSimpleForgotPassword, 2000);
     }
     
-    // Start when DOM is ready
+    // Initialize when ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
         initialize();
     }
     
-    // Also try on window load
-    window.addEventListener('load', function() {
-        setTimeout(initialize, 100);
-    });
-    
-    console.log('🐼 Unified Panda Login Handler ready');
+    window.addEventListener('load', initialize);
     
 })();
 </script>
