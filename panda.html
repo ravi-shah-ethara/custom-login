@@ -323,52 +323,63 @@
   </div>
 
 <script>
-// SIMPLEST APPROACH - Just update your panda.html JavaScript
-// This approach doesn't require any policy changes
-// It just makes the forgot password link use the same policy as sign-in
+// FINAL UNIFIED APPROACH - Everything uses B2C_1A_signup_signin
+// No separate password reset policy needed
 
 (function() {
     'use strict';
     
-    console.log('🐼 Simple Panda Login Handler');
+    console.log('🐼 Final Unified Panda Handler - Single Policy Approach');
     
-    function setupSimpleForgotPassword() {
+    function setupUnifiedForgotPassword() {
         const forgotLink = document.getElementById('forgotPassword');
         
-        if (forgotLink && !forgotLink.dataset.handled) {
-            console.log('Setting up simple forgot password redirect...');
-            forgotLink.dataset.handled = 'true';
+        if (forgotLink && !forgotLink.dataset.unified) {
+            console.log('Setting up unified forgot password (same policy)...');
+            forgotLink.dataset.unified = 'true';
             
-            // Override the forgot password link to stay in the same policy
             forgotLink.addEventListener('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
                 
                 // Get current URL parameters
-                const currentUrl = new URL(window.location.href);
+                const urlParams = new URLSearchParams(window.location.search);
+                const clientId = urlParams.get('client_id') || '40fed025-b479-4b40-84d8-8f28786cda73';
+                const redirectUri = urlParams.get('redirect_uri') || 'https://dadgp.abudhabigp.com/c/portal/login/openidconnect';
+                const responseType = urlParams.get('response_type') || 'code';
+                const scope = urlParams.get('scope') || 'openid email profile offline_access 40fed025-b479-4b40-84d8-8f28786cda73';
+                const state = urlParams.get('state') || '';
                 
-                // Change the policy parameter to use password reset policy
-                // but keep all other parameters the same
-                currentUrl.searchParams.set('p', 'B2C_1A_PasswordReset');
+                // ALWAYS use B2C_1A_signup_signin - no separate password reset policy
+                const unifiedUrl = `https://etharab2cuat.b2clogin.com/etharab2cuat.onmicrosoft.com/oauth2/v2.0/authorize?` +
+                    `p=B2C_1A_signup_signin&` +  // Always use the main policy
+                    `client_id=${encodeURIComponent(clientId)}&` +
+                    `response_type=${encodeURIComponent(responseType)}&` +
+                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                    `scope=${encodeURIComponent(scope)}&` +
+                    `ui_locales=en-US` +
+                    `&prompt=login` + // Force fresh authentication
+                    (state ? `&state=${encodeURIComponent(state)}` : '');
                 
-                // Redirect to password reset with same parameters
-                console.log('Redirecting to password reset:', currentUrl.toString());
-                window.location.href = currentUrl.toString();
+                console.log('Redirecting to unified policy (password reset via main flow):', unifiedUrl);
+                
+                setTimeout(() => window.location.href = unifiedUrl, 10);
+                return false;
             });
             
-            console.log('✅ Simple forgot password setup complete');
+            console.log('✅ Unified forgot password setup complete');
         }
     }
     
-    // Try to setup the forgot password link
     function initialize() {
-        setupSimpleForgotPassword();
+        console.log('🚀 Initializing unified handler...');
+        setupUnifiedForgotPassword();
         
-        // Try again in case the link loads later
-        setTimeout(setupSimpleForgotPassword, 1000);
-        setTimeout(setupSimpleForgotPassword, 2000);
+        // Retry in case elements load later
+        setTimeout(setupUnifiedForgotPassword, 1000);
     }
     
-    // Initialize when ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
@@ -376,6 +387,8 @@
     }
     
     window.addEventListener('load', initialize);
+    
+    console.log('🐼 Unified Panda Handler ready - Single policy for everything!');
     
 })();
 </script>
