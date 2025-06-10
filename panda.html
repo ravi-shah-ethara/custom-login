@@ -288,49 +288,72 @@
       outline: none;
     }
 
-    /* Style the forgot password button */
-.claims-provider-selection button,
-.claims-provider-selection .accountButton {
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: #f8f9fa;
-    color: #666;
-    text-decoration: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+  /* CSS to reposition forgot password button below sign-in form */
 
-/* Ensure the sign-in form appears first */
-.localAccountForm,
-.entry-item {
-    order: 1;
-    margin-bottom: 15px;
-}
-
-/* Container to control the layout order */
-#api {
+/* Main container - use flexbox to control order */
+#api[data-name="Unified"] {
     display: flex;
     flex-direction: column;
 }
 
-/* Alternative: If you can identify specific elements */
-div[data-name="ForgotPassword"],
-button[id*="ForgotPassword"],
-.forgotPassword {
-    margin-top: 20px !important;
-    order: 10 !important;
+/* Move the social claims provider section (which contains forgot password) to the bottom */
+.claims-provider-list-buttons.social {
+    order: 3; /* Move to bottom */
+    margin-top: 20px;
 }
 
-/* Ensure OR divider appears in the right place */
-.divider,
-.or-label {
+/* Move the first divider to order 1 */
+#api > .divider:first-of-type {
+    order: 1;
+    display: none; /* Hide the first OR divider since we're reordering */
+}
+
+/* Keep the form in the middle */
+#localAccountForm.localAccount {
     order: 2;
-    margin: 15px 0;
+    margin-bottom: 20px;
 }
 
+/* Style the forgot password button */
+#ForgotPasswordExchange {
+    width: 100%;
+    margin-top: 0;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    color: #666;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
 
+#ForgotPasswordExchange:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* Update the intro text for forgot password section */
+.claims-provider-list-buttons.social .intro h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #666;
+    text-align: center;
+}
+
+/* Hide or modify the "Sign in with your social account" text */
+.claims-provider-list-buttons.social .intro h2 {
+    display: none; /* Hide the misleading header */
+}
+
+/* Alternative: Change the text (if you can modify HTML) */
+.claims-provider-list-buttons.social .intro::after {
+    content: "Forgot your password?";
+    display: block;
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+    text-align: center;
+}
   </style>
 </head>
 
