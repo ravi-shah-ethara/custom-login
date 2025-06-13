@@ -1,449 +1,341 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    @import url(https://fonts.googleapis.com/css?family=Dancing+Script|Roboto);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panda Sign Up</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-    *,
-    *:after,
-    *:before {
-      box-sizing: border-box;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      background-image: linear-gradient(to right top, #7f3860, #793569, #703473, #62357e, #4d3888, #3f4595, #2c519f, #005ca8, #0071b0, #0084ae, #0094a5, #0ca299);
-      text-align: center;
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-    }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    .panda {
-      position: relative;
-      width: 200px;
-      margin: 50px auto;
-    }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
 
-    .face {
-      width: 200px;
-      height: 200px;
-      background: #fff;
-      border-radius: 100%;
-      margin: 50px auto;
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
-      z-index: 50;
-      position: relative;
-    }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
 
-    .ear,
-    .ear:after {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      background: #000;
-      z-index: 5;
-      border: 10px solid #fff;
-      left: -15px;
-      top: -15px;
-      border-radius: 100%;
-    }
+        .panda-face {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .ear:after {
-      content: '';
-      left: 125px;
-    }
+        .panda-face::before,
+        .panda-face::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: black;
+            border-radius: 50%;
+            top: -5px;
+        }
 
-    .eye-shade {
-      background: #000;
-      width: 50px;
-      height: 80px;
-      margin: 10px;
-      position: absolute;
-      top: 35px;
-      left: 25px;
-      transform: rotate(220deg);
-      border-radius: 25px/20px 30px 35px 40px;
-    }
+        .panda-face::before {
+            left: 10px;
+        }
 
-    .eye-shade.rgt {
-      transform: rotate(140deg);
-      left: 105px;
-    }
+        .panda-face::after {
+            right: 10px;
+        }
 
-    .eye-white {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      border-radius: 100%;
-      background: #fff;
-      z-index: 500;
-      left: 40px;
-      top: 80px;
-      overflow: hidden;
-    }
+        .panda-eyes {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
 
-    .eye-white.rgt {
-      right: 40px;
-      left: auto;
-    }
+        .eye {
+            width: 12px;
+            height: 12px;
+            background: black;
+            border-radius: 50%;
+            position: relative;
+        }
 
-    .eye-ball {
-      position: absolute;
-      width: 0px;
-      height: 0px;
-      left: 20px;
-      top: 20px;
-      max-width: 10px;
-      max-height: 10px;
-      transition: 0.1s;
-    }
+        .eye::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
 
-    .eye-ball:after {
-      content: '';
-      background: #000;
-      position: absolute;
-      border-radius: 100%;
-      right: 0;
-      bottom: 0px;
-      width: 20px;
-      height: 20px;
-    }
+        .nose {
+            width: 6px;
+            height: 4px;
+            background: black;
+            border-radius: 50%;
+            margin: 8px auto 0;
+        }
 
-    .nose {
-      position: absolute;
-      height: 20px;
-      width: 35px;
-      bottom: 40px;
-      left: 0;
-      right: 0;
-      margin: auto;
-      border-radius: 50px 20px/30px 15px;
-      transform: rotate(15deg);
-      background: #000;
-    }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
 
-    .body {
-      background: #fff;
-      position: absolute;
-      top: 200px;
-      left: -20px;
-      border-radius: 100px 100px 100px 100px/126px 126px 96px 96px;
-      width: 250px;
-      height: 382px;
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-      z-index: 10;
-    }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 5px 0 0;
+        }
 
-    .hand,
-    .hand:after,
-    .hand:before {
-      width: 40px;
-      height: 30px;
-      border-radius: 50px;
-      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
-      background: #000;
-      margin: 5px;
-      position: absolute;
-      top: 70px;
-      left: -25px;
-      z-index: 100;
-    }
+        .form-container {
+            padding: 30px;
+        }
 
-    .hand:after,
-    .hand:before {
-      content: '';
-      left: -5px;
-      top: 11px;
-    }
+        /* Hide default B2C elements we don't want */
+        .claims-provider-list-buttons.social,
+        #api > .divider:first-of-type,
+        #attributeVerification .intro {
+            display: none !important;
+        }
 
-    .hand:before {
-      top: 26px;
-    }
+        /* Clean form styling */
+        #attributeVerification {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
 
-    .hand.rgt,
-    .rgt.hand:after,
-    .rgt.hand:before {
-      left: auto;
-      right: -25px;
-    }
+        .entry-item {
+            margin-bottom: 20px !important;
+        }
 
-    .hand.rgt:after,
-    .hand.rgt:before {
-      left: auto;
-      right: -5px;
-    }
+        label {
+            display: block !important;
+            font-weight: 500 !important;
+            color: #374151 !important;
+            margin-bottom: 6px !important;
+            font-size: 14px !important;
+        }
 
-    .foot {
-      top: 360px;
-      left: -80px;
-      position: absolute;
-      background: #000;
-      z-index: 5;
-      box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
-      border-radius: 40px 40px 39px 40px/26px 26px 63px 63px;
-      width: 82px;
-      height: 120px;
-      margin-top: 135px;
-    }
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100% !important;
+            padding: 12px 16px !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+            transition: all 0.2s ease !important;
+            background: white !important;
+            color: #1f2937 !important;
+        }
 
-    .foot:after {
-      content: '';
-      width: 55px;
-      height: 65px;
-      background: #222;
-      border-radius: 100%;
-      position: absolute;
-      bottom: 10px;
-      left: 0;
-      right: 0;
-      margin: auto;
-    }
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        }
 
-    .foot .finger,
-    .foot .finger:after,
-    .foot .finger:before {
-      position: absolute;
-      width: 25px;
-      height: 35px;
-      background: #222;
-      border-radius: 100%;
-      top: 10px;
-      right: 5px;
-    }
+        /* Email verification styling */
+        #emailVerificationControl {
+            display: flex !important;
+            gap: 8px !important;
+            align-items: flex-end !important;
+        }
 
-    .foot .finger:after,
-    .foot .finger:before {
-      content: '';
-      right: 30px;
-      width: 20px;
-      top: 0;
-    }
+        #emailVerificationControl input {
+            flex: 1 !important;
+        }
 
-    .foot .finger:before {
-      right: 55px;
-      top: 5px;
-    }
+        #emailVerificationControl_but_send_code {
+            background: #10b981 !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 16px !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: background-color 0.2s ease !important;
+            white-space: nowrap !important;
+        }
 
-    .foot.rgt {
-      left: auto;
-      right: -80px;
-    }
+        #emailVerificationControl_but_send_code:hover {
+            background: #059669 !important;
+        }
 
-    .foot.rgt .finger,
-    .foot.rgt .finger:after,
-    .foot.rgt .finger:before {
-      left: 5px;
-      right: auto;
-    }
+        /* Submit button */
+        #continue {
+            width: 100% !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            padding: 14px !important;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: transform 0.2s ease !important;
+            margin-top: 10px !important;
+        }
 
-    .foot.rgt .finger:after {
-      left: 30px;
-      right: auto;
-    }
+        #continue:hover {
+            transform: translateY(-1px) !important;
+        }
 
-    .foot.rgt .finger:before {
-      left: 55px;
-      right: auto;
-    }
+        /* Cancel link */
+        .cancel {
+            text-align: center !important;
+            margin-top: 20px !important;
+            padding-top: 20px !important;
+            border-top: 1px solid #e5e7eb !important;
+        }
 
-    /* Form positioning inside panda body */
-    .form {
-      position: absolute;
-      top: 280px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 200;
-      width: 200px;
-    }
+        .cancel a {
+            color: #6b7280 !important;
+            text-decoration: none !important;
+            font-size: 14px !important;
+            transition: color 0.2s ease !important;
+        }
 
-    .form h1 {
-      color: #333;
-      font-size: 24px;
-      margin: 10px 0;
-      font-family: 'Dancing Script', cursive;
-    }
+        .cancel a:hover {
+            color: #374151 !important;
+        }
 
-    /* B2C API container */
-    #api {
-      position: relative;
-      z-index: 300;
-      background: transparent;
-      padding: 10px;
-    }
+        /* Error messages */
+        .error {
+            color: #ef4444 !important;
+            font-size: 13px !important;
+            margin-top: 4px !important;
+        }
 
-    /* Hide elements that don't apply to sign-up */
-    .claims-provider-list-buttons.social,
-    #api > .divider:first-of-type {
-      display: none !important;
-    }
+        /* Help text styling */
+        .helpText {
+            font-size: 12px !important;
+            color: #6b7280 !important;
+            margin-top: 4px !important;
+            line-height: 1.4 !important;
+        }
 
-    /* Style the sign-up form */
-    #attributeVerification {
-      background: transparent !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
+        /* What is this links */
+        a[href*="whatisthis"] {
+            color: #667eea !important;
+            text-decoration: none !important;
+            font-size: 12px !important;
+        }
 
-    /* Style form intro/heading */
-    #attributeVerification .intro {
-      display: none; /* Hide default heading */
-    }
+        a[href*="whatisthis"]:hover {
+            text-decoration: underline !important;
+        }
 
-    /* Style form fields */
-    #email, #password, #reenterPassword, #givenName, #surname, #verificationCode {
-      width: 100% !important;
-      padding: 8px 10px !important;
-      margin: 5px 0 !important;
-      border: 1px solid #ddd !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
-      background: rgba(255, 255, 255, 0.9) !important;
-      color: #333 !important;
-      box-sizing: border-box !important;
-    }
+        /* Working/loading indicator */
+        .working {
+            text-align: center !important;
+            margin: 15px 0 !important;
+        }
 
-    /* Style labels */
-    #attributeVerification label {
-      display: block !important;
-      font-size: 11px !important;
-      color: #333 !important;
-      margin-bottom: 3px !important;
-      font-weight: normal !important;
-      text-align: left !important;
-    }
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                border-radius: 16px;
+            }
 
-    /* Style the entry items */
-    #attributeVerification .entry-item {
-      margin-bottom: 10px !important;
-      text-align: left !important;
-    }
+            .header {
+                padding: 25px 20px 15px;
+            }
 
-    /* Style submit button */
-    #continue {
-      background-color: #4d3888 !important;
-      color: white !important;
-      border: none !important;
-      padding: 10px 20px !important;
-      border-radius: 4px !important;
-      cursor: pointer !important;
-      width: 100% !important;
-      margin-top: 10px !important;
-      font-size: 14px !important;
-      font-weight: bold !important;
-    }
+            .form-container {
+                padding: 25px;
+            }
 
-    #continue:hover {
-      background-color: #3f2c6b !important;
-    }
+            .panda-face {
+                width: 70px;
+                height: 70px;
+            }
 
-    /* Style email verification button */
-    #emailVerificationControl_but_send_code {
-      background-color: #28a745 !important;
-      color: white !important;
-      border: none !important;
-      padding: 6px 12px !important;
-      border-radius: 4px !important;
-      cursor: pointer !important;
-      font-size: 11px !important;
-      margin-left: 5px !important;
-    }
+            .header h1 {
+                font-size: 22px;
+            }
 
-    #emailVerificationControl_but_send_code:hover {
-      background-color: #218838 !important;
-    }
+            #emailVerificationControl {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
 
-    /* Style verification control container */
-    #emailVerificationControl {
-      display: flex !important;
-      align-items: center !important;
-      gap: 5px !important;
-    }
+            #emailVerificationControl_but_send_code {
+                width: 100% !important;
+            }
+        }
 
-    /* Style error messages */
-    .error {
-      color: #dc3545 !important;
-      font-size: 11px !important;
-      margin-top: 3px !important;
-    }
+        /* Hide bullets and clean up lists */
+        ul, li {
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
 
-    /* Style cancel/back link */
-    .cancel {
-      text-align: center !important;
-      margin-top: 15px !important;
-      padding: 10px !important;
-    }
+        /* Clean up any default B2C styling */
+        .intro {
+            display: none !important;
+        }
 
-    .cancel a {
-      color: #666 !important;
-      text-decoration: none !important;
-      font-size: 12px !important;
-    }
-
-    .cancel a:hover {
-      text-decoration: underline !important;
-      color: #333 !important;
-    }
-
-    /* Working/loading indicator */
-    .working {
-      text-align: center !important;
-      margin: 10px 0 !important;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .panda {
-        transform: scale(0.8);
-      }
-      
-      .form {
-        width: 180px;
-        top: 260px;
-      }
-      
-      #email, #password, #reenterPassword, #givenName, #surname, #verificationCode {
-        font-size: 11px !important;
-        padding: 6px 8px !important;
-      }
-    }
-  </style>
+        .pageLevel {
+            margin: 15px 0 !important;
+        }
+    </style>
 </head>
-
 <body>
-  <div id="panda-signup">
-    <div class="panda">
-      <div class="ear"></div>
-      <div class="face">
-        <div class="eye-shade"></div>
-        <div class="eye-white">
-          <div class="eye-ball"></div>
+    <div class="container">
+        <div class="header">
+            <div class="panda-face">
+                <div class="panda-eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+                <div class="nose"></div>
+            </div>
+            <h1>Create Account</h1>
+            <p>Join our panda family today!</p>
         </div>
-        <div class="eye-shade rgt"></div>
-        <div class="eye-white rgt">
-          <div class="eye-ball"></div>
+        
+        <div class="form-container">
+            <div id="api"></div>
         </div>
-        <div class="nose"></div>
-        <div class="mouth"></div>
-      </div>
-      <div class="body"></div>
-      <div class="hand"></div>
-      <div class="hand rgt"></div>
-      <div class="foot">
-        <div class="finger"></div>
-      </div>
-      <div class="foot rgt">
-        <div class="finger"></div>
-      </div>
-      
-      <!-- Form positioned inside panda body -->
-      <div class="form">
-        <h1>Sign Up</h1>
-        <div id="api"></div>
-      </div>
     </div>
-  </div>
 </body>
 </html>
