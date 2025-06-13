@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <style>
@@ -13,6 +14,9 @@
       background-image: linear-gradient(to right top, #7f3860, #793569, #703473, #62357e, #4d3888, #3f4595, #2c519f, #005ca8, #0071b0, #0084ae, #0094a5, #0ca299);
       text-align: center;
       font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
     }
 
     .panda {
@@ -128,6 +132,7 @@
       width: 250px;
       height: 382px;
       box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+      z-index: 10;
     }
 
     .hand,
@@ -142,6 +147,7 @@
       position: absolute;
       top: 70px;
       left: -25px;
+      z-index: 100;
     }
 
     .hand:after,
@@ -173,7 +179,7 @@
       left: -80px;
       position: absolute;
       background: #000;
-      z-index: 1400;
+      z-index: 5;
       box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
       border-radius: 40px 40px 39px 40px/26px 26px 63px 63px;
       width: 82px;
@@ -240,6 +246,169 @@
       left: 55px;
       right: auto;
     }
+
+    /* Form positioning inside panda body */
+    .form {
+      position: absolute;
+      top: 280px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      width: 200px;
+    }
+
+    .form h1 {
+      color: #333;
+      font-size: 24px;
+      margin: 10px 0;
+      font-family: 'Dancing Script', cursive;
+    }
+
+    /* B2C API container */
+    #api {
+      position: relative;
+      z-index: 300;
+      background: transparent;
+      padding: 10px;
+    }
+
+    /* Hide elements that don't apply to sign-up */
+    .claims-provider-list-buttons.social,
+    #api > .divider:first-of-type {
+      display: none !important;
+    }
+
+    /* Style the sign-up form */
+    #attributeVerification {
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Style form intro/heading */
+    #attributeVerification .intro {
+      display: none; /* Hide default heading */
+    }
+
+    /* Style form fields */
+    #email, #password, #reenterPassword, #givenName, #surname, #verificationCode {
+      width: 100% !important;
+      padding: 8px 10px !important;
+      margin: 5px 0 !important;
+      border: 1px solid #ddd !important;
+      border-radius: 4px !important;
+      font-size: 12px !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+      color: #333 !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Style labels */
+    #attributeVerification label {
+      display: block !important;
+      font-size: 11px !important;
+      color: #333 !important;
+      margin-bottom: 3px !important;
+      font-weight: normal !important;
+      text-align: left !important;
+    }
+
+    /* Style the entry items */
+    #attributeVerification .entry-item {
+      margin-bottom: 10px !important;
+      text-align: left !important;
+    }
+
+    /* Style submit button */
+    #continue {
+      background-color: #4d3888 !important;
+      color: white !important;
+      border: none !important;
+      padding: 10px 20px !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      width: 100% !important;
+      margin-top: 10px !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
+    }
+
+    #continue:hover {
+      background-color: #3f2c6b !important;
+    }
+
+    /* Style email verification button */
+    #emailVerificationControl_but_send_code {
+      background-color: #28a745 !important;
+      color: white !important;
+      border: none !important;
+      padding: 6px 12px !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      font-size: 11px !important;
+      margin-left: 5px !important;
+    }
+
+    #emailVerificationControl_but_send_code:hover {
+      background-color: #218838 !important;
+    }
+
+    /* Style verification control container */
+    #emailVerificationControl {
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+    }
+
+    /* Style error messages */
+    .error {
+      color: #dc3545 !important;
+      font-size: 11px !important;
+      margin-top: 3px !important;
+    }
+
+    /* Style cancel/back link */
+    .cancel {
+      text-align: center !important;
+      margin-top: 15px !important;
+      padding: 10px !important;
+    }
+
+    .cancel a {
+      color: #666 !important;
+      text-decoration: none !important;
+      font-size: 12px !important;
+    }
+
+    .cancel a:hover {
+      text-decoration: underline !important;
+      color: #333 !important;
+    }
+
+    /* Working/loading indicator */
+    .working {
+      text-align: center !important;
+      margin: 10px 0 !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .panda {
+        transform: scale(0.8);
+      }
+      
+      .form {
+        width: 180px;
+        top: 260px;
+      }
+      
+      #email, #password, #reenterPassword, #givenName, #surname, #verificationCode {
+        font-size: 11px !important;
+        padding: 6px 8px !important;
+      }
+    }
   </style>
 </head>
 
@@ -259,21 +428,22 @@
         <div class="nose"></div>
         <div class="mouth"></div>
       </div>
-      <div class="body"> </div>
+      <div class="body"></div>
+      <div class="hand"></div>
+      <div class="hand rgt"></div>
       <div class="foot">
         <div class="finger"></div>
       </div>
       <div class="foot rgt">
         <div class="finger"></div>
       </div>
-    </div>
-    <div class="form">
-      <div class="hand"></div>
-      <div class="hand rgt"></div>
-      <h1>Panda Login</h1>
-      <div id="api"></div>
+      
+      <!-- Form positioned inside panda body -->
+      <div class="form">
+        <h1>Sign Up</h1>
+        <div id="api"></div>
+      </div>
     </div>
   </div>
-  
 </body>
 </html>
